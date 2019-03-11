@@ -16,9 +16,11 @@ public class PacketTypeMessage {
 	public static final byte UNSUBSCRIBE = 7; // Client unsubscribe
 	public static final byte DISCONNECT = 8;// Client Disconnects
 	public static final byte SUBSACK = 9;// Client Subscribe Acknowledgement
+	public static final byte UNSUBACK = 11; // Unsubscribe Acknowledgment
+	public static final byte PING_REQUEST = 12;// Ping request
+	public static final byte PING_RESPONSE = 13;// Ping response
 
-
-	//Common Packet flags
+ 	//Common Packet flags
 	private boolean dupFlag;
 	private boolean retainFlag;
 

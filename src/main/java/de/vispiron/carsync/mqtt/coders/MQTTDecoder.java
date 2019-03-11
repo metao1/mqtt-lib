@@ -1,6 +1,8 @@
 package de.vispiron.carsync.mqtt.coders;
 
+import de.vispiron.carsync.mqtt.models.PacketIdMessage;
 import de.vispiron.carsync.mqtt.models.PacketTypeMessage;
+import de.vispiron.carsync.mqtt.models.PublishDecoder;
 import de.vispiron.carsync.mqtt.utils.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,7 +27,12 @@ public class MQTTDecoder extends ByteToMessageDecoder {
 	public MQTTDecoder() {
 		decoderMap.put(PacketTypeMessage.CONNECT, new ConnectDecoder());
 		decoderMap.put(PacketTypeMessage.CONNACK, new ConnAckDecoder());
-		decoderMap.put(PacketTypeMessage.SUBSCRIBE, new SubscribeDecoder());
+		decoderMap.put(PacketIdMessage.SUBSCRIBE, new SubscribeDecoder());
+		decoderMap.put(PacketIdMessage.PING_REQUEST, new PingRequestDecoder());
+		decoderMap.put(PacketIdMessage.PING_RESPONSE, new PingResponseDecoder());
+		decoderMap.put(PacketIdMessage.UNSUBACK, new UnsubscribeAckDecoder());
+		decoderMap.put(PacketTypeMessage.DISCONNECT, new DisconnectDecoder());
+		decoderMap.put(PacketTypeMessage.PUBLISH, new PublishDecoder());
 	}
 
 	/**

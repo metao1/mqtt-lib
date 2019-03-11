@@ -16,9 +16,9 @@ import java.util.List;
 
 public abstract class Decoder {
 
-	protected static final AttributeKey<Integer> PROTOCOL_VERSION = AttributeKey.valueOf("version");
+	public static final AttributeKey<Integer> PROTOCOL_VERSION = AttributeKey.valueOf("version");
 
-	abstract void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception;
+	protected abstract void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception;
 
 	protected boolean decodeCommonHeader(PacketTypeMessage message, Integer expectedFlags, ByteBuf buf) {
 		return generateHeaderPacket(message, expectedFlags, buf);

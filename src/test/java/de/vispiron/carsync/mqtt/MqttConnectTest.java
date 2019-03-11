@@ -1,6 +1,5 @@
 package de.vispiron.carsync.mqtt;
 
-import de.vispiron.carsync.mqtt.pack.MqttClient;
 import de.vispiron.carsync.mqtt.pack.MqttClientImpl;
 import de.vispiron.carsync.mqtt.pack.MqttConnectResult;
 import de.vispiron.carsync.mqtt.pack.MqttHandler;

@@ -30,5 +30,4 @@ public class MqttSubscribeTest extends MqttConnectTest {
 		mqttClient.getPendingSubscriptions().forEach((key, value) -> assertThat(value.getTopic()).isNotEmpty());
 	}
 
-
 }

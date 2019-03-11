@@ -1,11 +1,14 @@
 package de.vispiron.carsync.mqtt.utils;
 
+import de.vispiron.carsync.mqtt.coders.Decoder;
 import de.vispiron.carsync.mqtt.models.PacketTypeMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
+import io.netty.util.AttributeMap;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
@@ -172,7 +175,28 @@ public class Utils {
 		return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 	}
 
-	public static Object decodeByteBuffToString(ByteBuf bytes) {
+	public static String decodeByteBuffToString(ByteBuf bytes) {
 		return new String(bytes.array(), StandardCharsets.UTF_8);
 	}
+
+	public static boolean isMqttVersion3_1_1(AttributeMap map) {
+		Attribute<Integer> versionAttr = map.attr(Decoder.PROTOCOL_VERSION);
+		Integer protocolVersion = versionAttr.get();
+		if (protocolVersion == null) {
+			return true;
+		}
+		return protocolVersion == VERSION_3_1_1;
+	}
+
+	/**
+	 * Return the number of bytes to encode the given remaining length value
+	 */
+	public static int numBytesToEncode(int len) {
+		if (0 <= len && len <= 127) return 1;
+		if (128 <= len && len <= 16383) return 2;
+		if (16384 <= len && len <= 2097151) return 3;
+		if (2097152 <= len && len <= 268435455) return 4;
+		throw new IllegalArgumentException("value should be in the range [0..268435455]");
+	}
+
 }
