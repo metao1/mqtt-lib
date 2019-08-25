@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        netty_version = '4.1.28.Final'
+        netty_version = '4.1.39.Final'
     }
 }
 plugins {
@@ -10,9 +10,9 @@ plugins {
 
 apply plugin: 'io.spring.dependency-management'
 
-group = 'de.vispiron.carsync.mqtt'
+group = 'com.metao.mqtt'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -32,6 +32,11 @@ dependencies {
     compile "io.netty:netty-codec-mqtt:$netty_version"
     compile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
     compile "com.google.code.findbugs:jsr305:3.0.2"
-    
+    compile "org.redisson:redisson:3.7.2"
+    compile "org.springframework.boot:spring-boot-starter-data-mongodb"
+    compile "org.springframework.security:spring-security-crypto:4.0.3.RELEASE"
+    compile "org.springframework.boot:spring-boot-configuration-processor"
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
