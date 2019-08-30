@@ -5,10 +5,13 @@ import com.metao.mqtt.models.PingRequestPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class PingReqEncoder implements Encoder<PingRequestPacket> {
+/**
+ * @author Mehrdad
+ */
+class PingReqEncoder extends Encoder<PingRequestPacket> {
 
     @Override
-    public void encode(ChannelHandlerContext channelHandlerContext, PingRequestPacket msg, ByteBuf byteBuf) {
-        byteBuf.writeByte(PacketTypeMessage.PINGREQ << 4).writeByte(0);
+    protected void encode(ChannelHandlerContext chc, PingRequestPacket msg, ByteBuf out) {
+        out.writeByte(PacketTypeMessage.PINGREQ << 4).writeByte(0);
     }
 }

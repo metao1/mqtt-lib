@@ -1,14 +1,17 @@
 package com.metao.mqtt.coders.encoders;
 
 import com.metao.mqtt.models.DisconnectPacket;
-import com.metao.mqtt.models.ZeroLengthPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class DisconnectEncoder implements Encoder<DisconnectPacket> {
+/**
+ * @author Mehrdad
+ */
+public class DisconnectEncoder extends Encoder<DisconnectPacket> {
 
     @Override
-    public void encode(ChannelHandlerContext channelHandlerContext, DisconnectPacket msg, ByteBuf byteBuf) {
-        byteBuf.writeByte(ZeroLengthPacket.DISCONNECT << 4).writeByte(0);
+    protected void encode(ChannelHandlerContext chc, DisconnectPacket msg, ByteBuf out) {
+        out.writeByte(DisconnectPacket.DISCONNECT << 4).writeByte(0);
     }
+
 }

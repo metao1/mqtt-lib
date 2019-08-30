@@ -39,13 +39,8 @@ public class PacketTypeMessage {
 
 	protected int remainingLength;
 
-	public void setMessageType(
-			@NonNull
-					byte messageType) {
+	public void setMessageType(@NonNull byte messageType) {
 		this.messageType = messageType;
-	}
-	public QosType getQosType() {
-		return qosType;
 	}
 
 	public void setQosType(QosType qosType) {

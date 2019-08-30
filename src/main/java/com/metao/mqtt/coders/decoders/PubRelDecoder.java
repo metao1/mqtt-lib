@@ -1,15 +1,20 @@
+
 package com.metao.mqtt.coders.decoders;
 
-import com.metao.mqtt.models.PubRelPacket;
 import com.metao.mqtt.models.PacketIdMessage;
+import com.metao.mqtt.models.PubRelPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
-
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-public class PubRelDecoder extends Decoder {
+/**
+ * @author Mehrdad
+ */
+class PubRelDecoder extends Decoder {
+
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
         in.resetReaderIndex();
         //Common decoding part
         PacketIdMessage message = new PubRelPacket();
@@ -22,4 +27,6 @@ public class PubRelDecoder extends Decoder {
         message.setPacketId(in.readUnsignedShort());
         out.add(message);
     }
+
 }
+

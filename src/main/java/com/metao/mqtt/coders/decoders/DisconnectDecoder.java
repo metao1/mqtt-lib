@@ -7,18 +7,20 @@ import io.netty.util.AttributeMap;
 import java.util.List;
 
 /**
- * @author Mehrdad A.Karami at 3/11/19
- **/
+ * @author Mehrdad
+ */
+class DisconnectDecoder extends Decoder {
 
-public class DisconnectDecoder extends Decoder {
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
+        //Common decoding part
         in.resetReaderIndex();
-        DisconnectPacket disconnectPacket = new DisconnectPacket();
-        if (!decodeCommonHeader(disconnectPacket, 0x00, in)) {
+        DisconnectPacket message = new DisconnectPacket();
+        if (!decodeCommonHeader(message, 0x00, in)) {
             in.resetReaderIndex();
             return;
         }
-        out.add(disconnectPacket);
+        out.add(message);
     }
+
 }

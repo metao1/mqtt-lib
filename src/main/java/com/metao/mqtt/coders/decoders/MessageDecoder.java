@@ -7,23 +7,25 @@ import io.netty.util.AttributeMap;
 import java.util.List;
 
 /**
- * @author Mehrdad A.Karami at 3/11/19
- **/
+ * @author Mehrdad
+ */
+abstract class MessageDecoder extends Decoder {
 
-public abstract class MessageDecoder extends Decoder {
-
-	protected abstract PacketIdMessage createMessage();
+    protected abstract PacketIdMessage createMessage();
 
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         in.resetReaderIndex();
         //Common decoding part
-        PacketIdMessage packetIdMessage = createMessage();
-        if (!decodeCommonHeader(packetIdMessage, 0X00, in)) {
+        PacketIdMessage message = createMessage();
+        if (!decodeCommonHeader(message, 0x00, in)) {
+            in.resetReaderIndex();
             return;
         }
-        //read messageIDs
-        packetIdMessage.setPacketId(in.readUnsignedShort());
-        out.add(packetIdMessage);
+
+        //read  messageIDs
+        message.setPacketId(in.readUnsignedShort());
+        out.add(message);
     }
+
 }

@@ -1,13 +1,16 @@
 package com.metao.mqtt.coders.encoders;
 
-import com.metao.mqtt.models.PacketTypeMessage;
 import com.metao.mqtt.models.PingResponsePacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class PingRespEncoder implements Encoder<PingResponsePacket> {
+/**
+ * @author Mehrdad
+ */
+class PingRespEncoder extends Encoder<PingResponsePacket> {
+
     @Override
-    public void encode(ChannelHandlerContext channelHandlerContext, PingResponsePacket msg, ByteBuf byteBuf) {
-        byteBuf.writeByte(PacketTypeMessage.PINGRESP << 4).writeByte(0);
+    protected void encode(ChannelHandlerContext chc, PingResponsePacket msg, ByteBuf out) {
+        out.writeByte(PingResponsePacket.PINGRESP << 4).writeByte(0);
     }
 }

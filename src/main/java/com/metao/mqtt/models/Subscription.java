@@ -71,7 +71,7 @@ public class Subscription {
 
     @Override
     public String toString() {
-        return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos);
+        return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos, true);
     }
 
     @Override

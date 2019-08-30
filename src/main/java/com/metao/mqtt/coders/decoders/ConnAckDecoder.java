@@ -7,23 +7,25 @@ import io.netty.util.AttributeMap;
 import java.util.List;
 
 /**
- * @author Mehrdad A.Karami at 2/28/19
- **/
-
-public class ConnAckDecoder extends Decoder {
+ * @author Mehrdad
+ */
+class ConnAckDecoder extends Decoder {
 
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         in.resetReaderIndex();
         //Common decoding part
-        ConnAckPacket connAckPacket = new ConnAckPacket();
-        if (!decodeCommonHeader(connAckPacket, in)) {
+        ConnAckPacket message = new ConnAckPacket();
+        if (!decodeCommonHeader(message, 0x00, in)) {
             in.resetReaderIndex();
             return;
         }
-        in.skipBytes(1);//skip reserved byte
-        //read return code
-        connAckPacket.setReturnCode(in.readByte());
-        out.add(connAckPacket);
+        //skip reserved byte
+        in.skipBytes(1);
+
+        //read  return code
+        message.setReturnCode(in.readByte());
+        out.add(message);
     }
+
 }

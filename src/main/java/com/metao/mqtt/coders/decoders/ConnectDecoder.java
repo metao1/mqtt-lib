@@ -1,3 +1,4 @@
+
 package com.metao.mqtt.coders.decoders;
 
 import com.metao.mqtt.models.ConnectPacket;
@@ -13,15 +14,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
- * @author Mehrdad A.Karami at 2/27/19
- **/
-
+ * @author Mehrdad
+ */
 public class ConnectDecoder extends Decoder {
 
-    private static final AttributeKey<Boolean> CONNECT_STATUS = AttributeKey.valueOf("connected");
+    static final AttributeKey<Boolean> CONNECT_STATUS = AttributeKey.valueOf("connected");
 
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
         in.resetReaderIndex();
         //Common decoding part
         ConnectPacket message = new ConnectPacket();
@@ -35,7 +35,7 @@ public class ConnectDecoder extends Decoder {
         int protocolNameLen = in.readUnsignedShort();
         byte[] encProtoName;
         String protoName;
-        Attribute<Integer> versionAttr = map.attr(PROTOCOL_VERSION);
+        Attribute<Integer> versionAttr = ctx.attr(MQTTDecoder.PROTOCOL_VERSION);
         switch (protocolNameLen) {
             case 6:
                 //MQTT version 3.1 "MQIsdp"
@@ -87,7 +87,7 @@ public class ConnectDecoder extends Decoder {
             }
 
             //check if this is another connect from the same client on the same session
-            Attribute<Boolean> connectAttr = map.attr(ConnectDecoder.CONNECT_STATUS);
+            Attribute<Boolean> connectAttr = ctx.attr(ConnectDecoder.CONNECT_STATUS);
             Boolean alreadyConnected = connectAttr.get();
             if (alreadyConnected == null) {
                 //never set
@@ -202,4 +202,5 @@ public class ConnectDecoder extends Decoder {
 
         out.add(message);
     }
+
 }

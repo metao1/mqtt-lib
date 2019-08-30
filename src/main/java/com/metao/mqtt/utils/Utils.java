@@ -1,6 +1,7 @@
 package com.metao.mqtt.utils;
 
 import com.metao.mqtt.coders.decoders.Decoder;
+import com.metao.mqtt.coders.decoders.MQTTDecoder;
 import com.metao.mqtt.models.PacketTypeMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -163,10 +164,11 @@ public class Utils {
         channel.attr(ATTR_KEY_SESSION_STOLEN).set(value);
     }
 
+    public static Boolean sessionStolen(Channel channel) {
+        return (Boolean) channel.attr(ATTR_KEY_SESSION_STOLEN).get();
+    }
+
     public static ByteBuf encodeStringToByteBuff(String stringValue) {
-        if (!isValid(stringValue)) {
-            throw new MalformedParametersException("String value is a must");
-        }
         byte[] raw;
         try {
             raw = stringValue.getBytes("UTF-8");
@@ -174,9 +176,7 @@ public class Utils {
             LoggerFactory.getLogger(Utils.class).error(null, ex);
             return null;
         }
-        ByteBuf byteBuf = Unpooled.buffer(2);
-        byteBuf.writeShort(raw.length);
-        return byteBuf;
+        return encodeFixedLengthContent(raw);
     }
 
 
@@ -200,6 +200,7 @@ public class Utils {
         if (msg.isRetainFlag()) {
             flags |= 0x01;
         }
+
         flags |= ((msg.getQos().byteValue() & 0x03) << 1);
         return flags;
     }
@@ -213,7 +214,7 @@ public class Utils {
     }
 
     public static boolean isMqttVersion3_1_1(AttributeMap map) {
-        Attribute<Integer> versionAttr = map.attr(Decoder.PROTOCOL_VERSION);
+        Attribute<Integer> versionAttr = map.attr(MQTTDecoder.PROTOCOL_VERSION);
         Integer protocolVersion = versionAttr.get();
         if (protocolVersion == null) {
             return true;
@@ -284,7 +285,7 @@ public class Utils {
     }
 
     public static boolean isMQTT3_1_1(AttributeMap map) {
-        Attribute<Integer> versionAttr = map.attr(Decoder.PROTOCOL_VERSION);
+        Attribute<Integer> versionAttr = map.attr(MQTTDecoder.PROTOCOL_VERSION);
         Integer protocolVersion = versionAttr.get();
         if (protocolVersion == null) {
             return true;

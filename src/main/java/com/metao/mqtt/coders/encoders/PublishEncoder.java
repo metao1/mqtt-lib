@@ -7,10 +7,13 @@ import com.metao.mqtt.utils.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-class PublishEncoder implements Encoder<PublishPacket> {
+/**
+ * @author Mehrdad
+ */
+class PublishEncoder extends Encoder<PublishPacket> {
 
     @Override
-    public void encode(ChannelHandlerContext ctx, PublishPacket message, ByteBuf out) {
+    protected void encode(ChannelHandlerContext ctx, PublishPacket message, ByteBuf out) {
         if (message.getQos() == QosType.RESERVED) {
             throw new IllegalArgumentException("Found a message with RESERVED Qos");
         }
@@ -25,7 +28,7 @@ class PublishEncoder implements Encoder<PublishPacket> {
             if (message.getQos() == QosType.LEAST_ONE ||
                 message.getQos() == QosType.EXACTLY_ONCE) {
                 if (message.getPacketId() == null) {
-                    throw new IllegalArgumentException("Found a message with QOS 1 or 2 and not MessageID setted");
+                    throw new IllegalArgumentException("Found a message with QOS 1 or 2 and not MessageID has set");
                 }
                 variableHeaderBuff.writeShort(message.getPacketId());
             }
