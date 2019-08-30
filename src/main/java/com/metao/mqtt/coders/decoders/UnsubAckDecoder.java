@@ -7,7 +7,7 @@ import com.metao.mqtt.models.UnsubscribeAckPacket;
 /**
  * @author Mehrdad
  */
-class UnsubAckDecoder extends MessageIDDecoder {
+class UnsubAckDecoder extends MessageDecoder {
 
     @Override
     protected PacketIdMessage createMessage() {

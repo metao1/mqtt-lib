@@ -8,7 +8,7 @@ import com.metao.mqtt.models.PublishAckPacket;
 /**
  * @author Mehrdad
  */
-class PubAckDecoder extends MessageIDDecoder {
+class PubAckDecoder extends MessageDecoder {
 
     @Override
     protected PacketIdMessage createMessage() {

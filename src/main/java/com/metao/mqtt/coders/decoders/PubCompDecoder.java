@@ -8,7 +8,7 @@ import com.metao.mqtt.models.PubCompPacket;
 /**
  * @author Mehrdad
  */
-class PubCompDecoder extends MessageIDDecoder {
+class PubCompDecoder extends MessageDecoder {
 
     @Override
     protected PacketIdMessage createMessage() {

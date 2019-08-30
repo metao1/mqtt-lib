@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Mehrdad
  */
-abstract class MessageIDDecoder extends Decoder {
+abstract class MessageDecoder extends Decoder {
 
     protected abstract PacketIdMessage createMessage();
 

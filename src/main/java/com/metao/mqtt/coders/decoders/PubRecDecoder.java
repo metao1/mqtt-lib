@@ -6,7 +6,7 @@ import com.metao.mqtt.models.PubRecPacket;
 /**
  * @author Mehrdad
  */
-class PubRecDecoder extends MessageIDDecoder {
+class PubRecDecoder extends MessageDecoder {
 
     @Override
     protected PacketIdMessage createMessage() {

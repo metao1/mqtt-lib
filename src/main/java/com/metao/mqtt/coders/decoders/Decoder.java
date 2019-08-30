@@ -13,6 +13,25 @@ import java.util.List;
  * @author Mehrdad
  */
 public abstract class Decoder {
+
+    /************************************************************************************************************/
+	/*								 MQTT PACKET FORMAT
+	 *  |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+	 *  |     4 bits    |       4 bits    |          8 bits       |        0 - Y Bytes 		    |  0 - X Bytes  |
+	 *  |  packet type  |        Flags    |      Packet Length    |   Variable Length Header    |    Payload    |
+ 	 *  |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+	 *  |	control packet 8 bits	      |		 8 bits at least  |												|
+     *
+	  	||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+	    | bit   | 7   |   6   |   5  |  4  |   3   |   2   |   1   |   0   |
+	    |       |                          |  Flags specific to each MQTT  |
+	    | Byte1	| MQTT Control Packet Type |   	Control Packet type        |
+	    |_______|__________________________|_______________________________|
+	    | Byte2 |  					Remaining Length                       |
+        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+ 	/************************************************************************************************************/
     protected abstract void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception;
 
     /**
