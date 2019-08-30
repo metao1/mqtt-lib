@@ -7,10 +7,13 @@ import io.netty.util.AttributeMap;
 
 import java.util.List;
 
-public class SubscribeAckDecoder extends Decoder {
+/**
+ * @author Mehrdad
+ */
+class SubAckDecoder extends Decoder {
 
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         //Common decoding part
         in.resetReaderIndex();
         SubscribeAckPacket message = new SubscribeAckPacket();
@@ -36,4 +39,5 @@ public class SubscribeAckDecoder extends Decoder {
 
         out.add(message);
     }
+
 }

@@ -8,38 +8,40 @@ import java.nio.ByteBuffer;
 
 public class PublishPacket extends PacketIdMessage {
 
-	private boolean local = true;
-	private String clientId;
-	protected String topicName;
-	protected ByteBuffer payload;
+    private static int counter = 0;
+    private boolean local = true;
+    private String clientId;
+    protected String topicName;
+    protected ByteBuffer payload;
 
-	public PublishPacket() {
-		setPacketLength(PUBLISH);
-	}
+    public PublishPacket() {
+        setMessageType(PUBLISH);
+        setPacketId(counter++);
+    }
 
-	public String getTopicName() {
-		return topicName;
-	}
+    public String getTopicName() {
+        return topicName;
+    }
 
-	public void setTopicName(String topicName) {
-		this.topicName = topicName;
-	}
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
 
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 
-	public String getClientId() {
-		return clientId;
-	}
+    public String getClientId() {
+        return clientId;
+    }
 
-	public void setPayload(ByteBuffer payload) {
-		this.payload = payload;
-	}
+    public void setPayload(ByteBuffer payload) {
+        this.payload = payload;
+    }
 
-	public ByteBuffer getPayload() {
-		return payload;
-	}
+    public ByteBuffer getPayload() {
+        return payload;
+    }
 
     public boolean isLocal() {
         return local;

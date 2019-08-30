@@ -1,35 +1,31 @@
 package com.metao.mqtt.coders.decoders;
 
 import com.metao.mqtt.models.PacketTypeMessage;
-import com.metao.mqtt.models.PublishDecoder;
 import com.metao.mqtt.utils.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.AttributeKey;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Mehrdad A.Karami at 2/26/19
- **/
-
 public class MQTTDecoder extends ByteToMessageDecoder {
 
-	private final Map<Byte, Decoder> decoderMap = new HashMap<>();
+    //3 = 3.1, 4 = 3.1.1
+    public static final AttributeKey<Integer> PROTOCOL_VERSION = AttributeKey.valueOf("version");
 
-	/**
-	 * Giving different packets type different header analysis
-	 */
-	public MQTTDecoder() {
+    private final Map<Byte, Decoder> decoderMap = new HashMap<>();
+
+    public MQTTDecoder() {
         decoderMap.put(PacketTypeMessage.CONNECT, new ConnectDecoder());
         decoderMap.put(PacketTypeMessage.CONNACK, new ConnAckDecoder());
         decoderMap.put(PacketTypeMessage.PUBLISH, new PublishDecoder());
-        decoderMap.put(PacketTypeMessage.PUBACK, new PublishAckDecoder());
+        decoderMap.put(PacketTypeMessage.PUBACK, new PubAckDecoder());
         decoderMap.put(PacketTypeMessage.SUBSCRIBE, new SubscribeDecoder());
-        decoderMap.put(PacketTypeMessage.SUBACK, new SubscribeAckDecoder());
+        decoderMap.put(PacketTypeMessage.SUBACK, new SubAckDecoder());
         decoderMap.put(PacketTypeMessage.UNSUBSCRIBE, new UnsubscribeDecoder());
         decoderMap.put(PacketTypeMessage.DISCONNECT, new DisconnectDecoder());
         decoderMap.put(PacketTypeMessage.PINGREQ, new PingReqDecoder());
@@ -38,29 +34,23 @@ public class MQTTDecoder extends ByteToMessageDecoder {
         decoderMap.put(PacketTypeMessage.PUBCOMP, new PubCompDecoder());
         decoderMap.put(PacketTypeMessage.PUBREC, new PubRecDecoder());
         decoderMap.put(PacketTypeMessage.PUBREL, new PubRelDecoder());
-	}
+    }
 
-	/**
-	 * First time the packets comes here for the decoding
-	 *
-	 * @param ctx the channel where the bytes come
-	 * @param in  input buffer
-	 * @param out output decoded objects as reference
-	 * @throws Exception if some misunderstanding
-	 */
-	@Override
-	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-		in.markReaderIndex();//Reposition of the reader flag
-		if (!Utils.checkValidHeader(in)) {
-			in.resetReaderIndex();//return back to the first position in the buffer
-			return;
-		}
-		in.resetReaderIndex();
-		byte messageType = Utils.readMessageType(in);
-		Decoder decoder = decoderMap.get(messageType);//after knowing what message type it is, we need to decode it
-		if (decoder == null) {
-			throw new CorruptedFrameException("Can't find any suitable decoder for message type " + messageType);
-		}
-		decoder.decode(ctx, in, out);
-	}
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        in.markReaderIndex();
+        if (!Utils.checkValidHeader(in)) {
+            in.resetReaderIndex();
+            return;
+        }
+        in.resetReaderIndex();
+
+        byte messageType = Utils.readMessageType(in);
+
+        Decoder decoder = decoderMap.get(messageType);
+        if (decoder == null) {
+            throw new CorruptedFrameException("Can't find any suitable decoder for message type: " + messageType);
+        }
+        decoder.decode(ctx, in, out);
+    }
 }

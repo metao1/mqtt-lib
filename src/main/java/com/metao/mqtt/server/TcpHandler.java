@@ -29,7 +29,7 @@ public class TcpHandler extends ChannelInboundHandlerAdapter {
     public ProtocolHandler protocolAnalyser;
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object message) {
         PacketTypeMessage msg = (PacketTypeMessage) message;
         log.info("Received a message of type {}", Utils.msgTypeToString(msg.getMessageType()));
         try {
@@ -49,17 +49,20 @@ public class TcpHandler extends ChannelInboundHandlerAdapter {
                 case PUBACK:
                     protocolAnalyser.processPublishAck(ctx.channel(), (PublishAckPacket) message);
                     break;
+                case PUBREL:
+                    protocolAnalyser.processPublishRelease(ctx.channel(), (PubRelPacket) msg);
+                    break;
+                case PUBCOMP:
+                    protocolAnalyser.processPublishComplete(ctx.channel(), (PubCompPacket) msg);
+                    break;
+                case PUBREC:
+                    protocolAnalyser.processPublishReceived(ctx.channel(), (PublishReceivePacket) message);
+                    break;
                 case PUBLISH:
                     protocolAnalyser.processPublish(ctx.channel(), (PublishPacket) message);
                     break;
                 case PINGREQ:
                     protocolAnalyser.processPingRequest(ctx.channel());
-                    break;
-                case PUBREC:
-                    protocolAnalyser.processPublishReceived(ctx.channel(), (PublishReceivePacket) message);
-                    break;
-                case PUBCOMP:
-                    protocolAnalyser.processPublishComplete(ctx.channel(), (PubCompPacket) message);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported command!");
@@ -70,7 +73,31 @@ public class TcpHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
+        String clientID = Utils.clientId(ctx.channel());
+        if (clientID != null && !clientID.isEmpty()) {
+            //if the channel was of a correctly connected client, inform messaging
+            //else it was of a not completed CONNECT message or sessionStolen
+            boolean stolen = false;
+            Boolean stolenAttr = Utils.sessionStolen(ctx.channel());
+            if (stolenAttr == Boolean.TRUE) {
+                stolen = true;
+            }
+            protocolAnalyser.processConnectionLost(clientID, stolen, ctx.channel());
+        }
+        ctx.close();
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
+        if (ctx.channel().isWritable()) {
+            protocolAnalyser.notifyChannelWritable(ctx.channel());
+        }
+        ctx.fireChannelWritabilityChanged();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof CorruptedFrameException) {
             //decoding problem
             log.info("Error in processing the packet: bad formatted {}", cause.getMessage());

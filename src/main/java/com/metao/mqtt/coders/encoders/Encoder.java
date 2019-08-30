@@ -5,10 +5,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * @author Mehrdad A.Karami at 2/28/19
- **/
-
-public interface Encoder<T extends PacketTypeMessage> {
-
-	void encode(ChannelHandlerContext channelHandlerContext, T msg, ByteBuf byteBuf);
+ * @author Mehrdad
+ */
+abstract class Encoder<T extends PacketTypeMessage> {
+    abstract protected void encode(ChannelHandlerContext chc, T msg, ByteBuf bb);
 }

@@ -81,16 +81,16 @@ public class SubscriptionsStore {
      * Maintained for compatibility reasons.
      */
     public void init(SessionsStore sessionsStore) {
-        LOG.debug("init invoked");
+        LOG.info("init invoked");
         this.sessionsStore = sessionsStore;
         List<ClientTopicCouple> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any getClients persisted
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Reloading all stored getClients...subscription topicTree before {}", dumpTree());
+            LOG.info("Reloading all stored getClients...subscription topicTree before {}", dumpTree());
         }
 
         for (ClientTopicCouple clientTopic : subscriptions) {
-            LOG.debug("Re-subscribing {} to topic {}", clientTopic.clientId, clientTopic.topicFilter);
+            LOG.info("Re-subscribing {} to topic {}", clientTopic.clientId, clientTopic.topicFilter);
             add(clientTopic);
         }
         if (LOG.isTraceEnabled()) {
@@ -107,7 +107,7 @@ public class SubscriptionsStore {
             couple.createdNode.addClient(newSubscription); //createdNode could be null?
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while (!topicTree.compareAndSet(oldRoot, couple.root));
-        LOG.debug("root ref {}, original root was {}", couple.root, oldRoot);
+        LOG.info("root ref {}, original root was {}", couple.root, oldRoot);
     }
 
 

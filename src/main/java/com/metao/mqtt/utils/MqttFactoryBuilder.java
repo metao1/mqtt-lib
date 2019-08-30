@@ -63,7 +63,8 @@ public class MqttFactoryBuilder {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         setPipeLine(ch.pipeline());
-                        setOptions(bootstrap);
+                        bootstrap.option(ChannelOption.SO_BACKLOG, 128).option(ChannelOption.SO_REUSEADDR, true)
+                            .option(ChannelOption.TCP_NODELAY, true).childOption(ChannelOption.SO_KEEPALIVE, true);
                     }
                 });
             } catch (Exception e) {
@@ -133,18 +134,17 @@ public class MqttFactoryBuilder {
 
         @Override
         protected void setOptions(ServerBootstrap serverBootstrap) {
-            serverBootstrap.option(ChannelOption.SO_BACKLOG, 128).option(ChannelOption.SO_REUSEADDR, true)
-                .option(ChannelOption.TCP_NODELAY, true).childOption(ChannelOption.SO_KEEPALIVE, true);
+
         }
 
         @Override
         protected void setPipeLine(ChannelPipeline pipeline) {
             pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, 10))
                 .addAfter("idleStateHandler", "idleEventHandler", idleTimeoutHandler)
-                .addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector))
+                //.addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector))
                 .addLast("decoder", new MQTTDecoder())
                 .addLast("encoder", new MQTTEncoder())
-                .addLast("metrics", new MessageMetricsHandler(metricsCollector))
+                //.addLast("metrics", new MessageMetricsHandler(metricsCollector))
                 .addLast("handler", handlerAdapter);
         }
     }

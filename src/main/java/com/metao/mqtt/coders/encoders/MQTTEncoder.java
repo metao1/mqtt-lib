@@ -10,37 +10,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Mehrdad A.Karami at 2/28/19
- **/
-
+ * @author Mehrdad
+ */
 public class MQTTEncoder extends MessageToByteEncoder<PacketTypeMessage> {
 
-	private final Map<Byte, Encoder> encoderMap = new HashMap<>();
+    private Map<Byte, Encoder> m_encoderMap = new HashMap<Byte, Encoder>();
 
-	public MQTTEncoder() {
-        encoderMap.put(PacketTypeMessage.CONNECT, new ConnectEncoder());
-        encoderMap.put(PacketTypeMessage.CONNACK, new ConnAckEncoder());
-        encoderMap.put(PacketTypeMessage.PUBLISH, new PublishEncoder());
-        encoderMap.put(PacketTypeMessage.PUBACK, new PublishAckEncoder());
-        encoderMap.put(PacketTypeMessage.SUBSCRIBE, new SubscribeEncoder());
-        encoderMap.put(PacketTypeMessage.SUBACK, new SubscribeAckEncoder());
-        encoderMap.put(PacketTypeMessage.UNSUBSCRIBE, new UnsubscribeEncoder());
-        encoderMap.put(PacketTypeMessage.DISCONNECT, new DisconnectEncoder());
-        encoderMap.put(PacketTypeMessage.PINGREQ, new PingReqEncoder());
-        encoderMap.put(PacketTypeMessage.PINGRESP, new PingRespEncoder());
-        encoderMap.put(PacketTypeMessage.UNSUBACK, new UnsubAckEncoder());
-        encoderMap.put(PacketTypeMessage.PUBCOMP, new PubCompEncoder());
-        encoderMap.put(PacketTypeMessage.PUBREC, new PubRecEncoder());
-        encoderMap.put(PacketTypeMessage.PUBREL, new PubRelEncoder());
-	}
+    public MQTTEncoder() {
+        m_encoderMap.put(PacketTypeMessage.CONNECT, new ConnectEncoder());
+        m_encoderMap.put(PacketTypeMessage.CONNACK, new ConnAckEncoder());
+        m_encoderMap.put(PacketTypeMessage.PUBLISH, new PublishEncoder());
+        m_encoderMap.put(PacketTypeMessage.PUBACK, new PubAckEncoder());
+        m_encoderMap.put(PacketTypeMessage.SUBSCRIBE, new SubscribeEncoder());
+        m_encoderMap.put(PacketTypeMessage.SUBACK, new SubAckEncoder());
+        m_encoderMap.put(PacketTypeMessage.UNSUBSCRIBE, new UnsubscribeEncoder());
+        m_encoderMap.put(PacketTypeMessage.DISCONNECT, new DisconnectEncoder());
+        m_encoderMap.put(PacketTypeMessage.PINGREQ, new PingReqEncoder());
+        m_encoderMap.put(PacketTypeMessage.PINGRESP, new PingRespEncoder());
+        m_encoderMap.put(PacketTypeMessage.UNSUBACK, new UnsubAckEncoder());
+        m_encoderMap.put(PacketTypeMessage.PUBCOMP, new PubCompEncoder());
+        m_encoderMap.put(PacketTypeMessage.PUBREC, new PubRecEncoder());
+        m_encoderMap.put(PacketTypeMessage.PUBREL, new PubRelEncoder());
+    }
 
-	@Override
-	protected void encode(ChannelHandlerContext ctx, PacketTypeMessage msg, ByteBuf out) throws Exception {
-		Encoder encoder = encoderMap.get(msg.getMessageType());
-		if (encoder == null) {
-			throw new CorruptedFrameException(
-					"Can't find any suitable encoder for message type: " + msg.getMessageType());
-		}
-		encoder.encode(ctx, msg, out);
-	}
+    @Override
+    protected void encode(ChannelHandlerContext chc, PacketTypeMessage msg, ByteBuf bb) throws Exception {
+        Encoder encoder = m_encoderMap.get(msg.getMessageType());
+        if (encoder == null) {
+            throw new CorruptedFrameException("Can't find any suitable decoder for message type: " + msg.getMessageType());
+        }
+        encoder.encode(chc, msg, bb);
+    }
 }

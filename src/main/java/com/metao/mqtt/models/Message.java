@@ -1,5 +1,6 @@
 package com.metao.mqtt.models;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
@@ -8,8 +9,7 @@ import java.nio.ByteBuffer;
  * @author Mehrdad A.Karami at 3/5/19
  **/
 
-public class Message {
-
+public class Message implements Serializable {
     private QosType qos;
     private byte[] payload;
     private String topic;

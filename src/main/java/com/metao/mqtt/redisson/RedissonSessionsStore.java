@@ -47,7 +47,7 @@ public class RedissonSessionsStore implements SessionsStore {
 
     @Override
     public void addNewSubscription(Subscription newSubscription) {
-        LOG.debug("addNewSubscription invoked with subscription {}", newSubscription);
+        LOG.info("addNewSubscription invoked with subscription {}", newSubscription);
         final String clientId = newSubscription.getClientId();
         getSubscriptions(clientId).put(newSubscription.getTopicFilter(), newSubscription);
 
@@ -58,7 +58,7 @@ public class RedissonSessionsStore implements SessionsStore {
 
     @Override
     public void removeSubscription(String topicFilter, String clientId) {
-        LOG.debug("removeSubscription topic filter: {} for clientId: {}", topicFilter, clientId);
+        LOG.info("removeSubscription topic filter: {} for clientId: {}", topicFilter, clientId);
         if (!getSubscriptions(clientId).isExists()) {
             return;
         }
@@ -67,7 +67,7 @@ public class RedissonSessionsStore implements SessionsStore {
 
     @Override
     public void wipeSubscriptions(String sessionId) {
-        LOG.debug("wipeSubscriptions");
+        LOG.info("wipeSubscriptions");
         if (LOG.isTraceEnabled()) {
             LOG.trace("Subscription pre wipe: subscriptions:{}: {}", sessionId, getSubscriptions(sessionId));
         }
@@ -86,14 +86,14 @@ public class RedissonSessionsStore implements SessionsStore {
                 allSubscriptions.add(new ClientTopicCouple(clientId, topicFilter));
             }
         }
-        LOG.debug("retrieveAllSubscriptions returning subs {}", allSubscriptions);
+        LOG.info("retrieveAllSubscriptions returning subs {}", allSubscriptions);
         return allSubscriptions;
     }
 
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
         RMap<String, Subscription> clientSubscriptions = getSubscriptions(couple.clientId);
-        LOG.debug("subscriptions:{}: {}", couple.clientId, clientSubscriptions);
+        LOG.info("subscriptions:{}: {}", couple.clientId, clientSubscriptions);
         return clientSubscriptions.get(couple.topicFilter);
     }
 
@@ -104,12 +104,12 @@ public class RedissonSessionsStore implements SessionsStore {
 
     @Override
     public ClientSession createNewSession(String clientId, boolean cleanSession) {
-        LOG.debug("createNewSession for client <{}> with clean flag <{}>", clientId, cleanSession);
+        LOG.info("createNewSession for client <{}> with clean flag <{}>", clientId, cleanSession);
         if (persistentSessions.containsKey(clientId)) {
             LOG.error("already exists a session for client <{}>, bad condition", clientId);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientId);
         }
-        LOG.debug("clientId {} is a newcome, creating it's empty subscriptions set", clientId);
+        LOG.info("clientId {} is a newcome, creating it's empty subscriptions set", clientId);
         SessionStatus sessionStatus = new SessionStatus(cleanSession);
         persistentSessions.putIfAbsent(clientId, sessionStatus);
         return new ClientSession(clientId, messagesStore, this, sessionStatus);

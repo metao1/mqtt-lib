@@ -21,7 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.metao.mqtt.utils.Utils.*;
+import static com.metao.mqtt.utils.Utils.VERSION_3_1;
+import static com.metao.mqtt.utils.Utils.VERSION_3_1_1;
 
 /**
  * @author Mehrdad A.Karami at 2/25/19
@@ -71,7 +72,7 @@ public class ProtocolHandler {
      */
     public void processConnect(Channel channel, ConnectPacket packet) {
 
-        LOG.debug("CONNECT for client <{}>", packet.getClientId());
+        LOG.info("CONNECT for client <{}>", packet.getClientId());
         if (packet.getProtocolVersion() != VERSION_3_1 && packet.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckPacket badProto = new ConnAckPacket();
             badProto.setReturnCode(ConnAckPacket.UNNACEPTABLE_PROTOCOL_VERSION);
@@ -125,21 +126,21 @@ public class ProtocolHandler {
             oldClientSession.disconnect();
             Utils.sessionStolen(oldChannel, true);
             oldChannel.close();
-            LOG.debug("Existing connection with same client ID <{}>, forced to close", packet.getClientId());
+            LOG.info("Existing connection with same client ID <{}>, forced to close", packet.getClientId());
         }
 
         MqttSession connDescr = new MqttSession(packet.getClientId(), channel, packet.isCleanSession());
         mqttClients.put(packet.getClientId(), connDescr);
 
         int keepAlive = packet.getKeepAlive();
-        LOG.debug("Connect with keepAlive {} s", keepAlive);
+        LOG.info("Connect with keepAlive {} s", keepAlive);
         Utils.keepAlive(channel, keepAlive);
         //session.attr(Utils.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
         Utils.cleanSession(channel, packet.isCleanSession());
         //used to track the client in the subscription and publishing phases.
         //session.attr(Utils.ATTR_KEY_CLIENTID).set(msg.getClientId());
         Utils.clientId(channel, packet.getClientId());
-        LOG.debug("Connect create session <{}>", channel);
+        LOG.info("Connect create session <{}>", channel);
 
         setIdleTime(channel.pipeline(), Math.round(keepAlive * 1.5f));
 
@@ -186,6 +187,28 @@ public class ProtocolHandler {
         LOG.info("CONNECT processed");
     }
 
+    /**
+     * Republish QoS1 and QoS2 packets stored into the session for the clientId.
+     */
+    private void republishStoredInSession(ClientSession clientSession) {
+        LOG.trace("republishStoredInSession for client <{}>", clientSession);
+        List<Message> publishedEvents = clientSession.storedMessages();
+        if (publishedEvents.isEmpty()) {
+            LOG.info("No stored packets for client <{}>", clientSession.clientId);
+            return;
+        }
+
+        LOG.info("republishing stored packets to client <{}>", clientSession.clientId);
+        for (Message pubEvt : publishedEvents) {
+            //put in flight zone
+            LOG.trace("Adding to inflight <{}>", pubEvt.getPacketId());
+            clientSession.inFlightAckWaiting(pubEvt.getMsgId(), pubEvt.getPacketId());
+            directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
+                pubEvt.getMessage(), false, pubEvt.getPacketId());
+            clientSession.removeEnqueued(pubEvt.getMsgId());
+        }
+    }
+
     private void failedCredentials(Channel session) {
         ConnAckPacket okResp = new ConnAckPacket();
         okResp.setReturnCode(ConnAckPacket.BAD_USERNAME_OR_PASSWORD);
@@ -201,47 +224,6 @@ public class ProtocolHandler {
         } catch (NoSuchElementException e) {
             pipeline.addFirst("autoFlusher", autoFlusherHandler);
         }
-    }
-
-    /**
-     * Republish Qos1 & Qos2 packets stored into the session for the clientId
-     *
-     * @param clientSession
-     */
-    private void republishStoredInSession(ClientSession clientSession) {
-        //todo impl mechanism for the republish of the messages
-    }
-
-    private void handleWillFlag(ConnectPacket packet) {
-        if (packet.isWillFlag()) {
-            QosType willQos = QosType.valueOf(packet.getWillQos());
-            byte[] willPayload = packet.getWillMessage();
-            //ByteBuffer byteBuffer = ByteBuffer.allocate(willPayload.length).put(willPayload);
-            ByteBuffer byteBuffer = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
-            //save the will in the clientId store
-            WillMessage willMessage = new WillMessage(packet.getWillTopic(), byteBuffer, packet.isWillRetain(),
-                willQos);
-            willStore.put(packet.getClientId(), willMessage);
-            LOG.info("Session for pack <{}> with will to topic {}", packet.getClientId(), packet.getWillTopic());
-        }
-    }
-
-    private void manageTheSession(Channel channel, ConnectPacket packet) {
-        //Keep the channel alive for mqtt Clients
-        LOG.info("Keep channel alive with {} ", channel);
-        channel.attr(ATTR_KEY_KEEPALIVE).set(packet.getKeepAlive());
-
-        //Clean the session
-        channel.attr(ATTR_KEY_CLEANSESSION).set(packet.getCleanSession());
-
-        //Assign the pack an ID (later we need it for disconnection message)
-        channel.attr(ATTR_KEY_CLIENTID).set(packet.getClientId());
-
-        MqttSession mqttSession = new MqttSession(packet.getClientId(), channel, packet.isCleanSession());
-        mqttClients.put(packet.getClientId(), mqttSession);//saving the session for packets with the same user ids
-        LOG.info("Session {} created ", channel);
-        //set the idle time
-        setIdleTime(channel.pipeline(), Math.round(packet.getKeepAlive() * 1.5f));
     }
 
     private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
@@ -277,7 +259,7 @@ public class ProtocolHandler {
 
     public void processSubscribe(Channel channel, SubscribePacket msg) {
         String clientId = Utils.clientId(channel);
-        LOG.debug("SUBSCRIBE client <{}> packetID {}", clientId, msg.getPacketId());
+        LOG.info("SUBSCRIBE client <{}> packetID {}", clientId, msg.getPacketId());
 
         ClientSession clientSession = sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientSession);
@@ -290,7 +272,7 @@ public class ProtocolHandler {
         for (SubscribePacket.DeCouple req : msg.getSubscriptions()) {
             if (!authorizator.canRead(req.getTopicFilter(), username, clientSession.clientId)) {
                 //send SUBACK with 0x80, the user hasn't credentials to read the topic
-                LOG.debug("topic {} doesn't have read credentials", req.getTopicFilter());
+                LOG.info("topic {} doesn't have read credentials", req.getTopicFilter());
                 ackMessage.addType(QosType.FAILURE);
                 continue;
             }
@@ -305,7 +287,7 @@ public class ProtocolHandler {
         }
 
         //save session, persist subscriptions from session
-        LOG.debug("SUBACK for packetID {}", msg.getPacketId());
+        LOG.info("SUBACK for packetID {}", msg.getPacketId());
         if (LOG.isTraceEnabled()) {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
@@ -322,7 +304,7 @@ public class ProtocolHandler {
     }
 
     private void subscribeSingleTopic(final Subscription newSubscription) {
-        LOG.debug("Subscribing {}", newSubscription);
+        LOG.info("Subscribing {}", newSubscription);
         subscriptions.add(newSubscription.asClientTopicCouple());
     }
 
@@ -331,7 +313,7 @@ public class ProtocolHandler {
         int messageID = msg.getPacketId();
         String clientID = Utils.clientId(channel);
 
-        LOG.debug("UNSUBSCRIBE subscription on topics {} for clientId <{}>", topics, clientID);
+        LOG.info("UNSUBSCRIBE subscription on topics {} for clientId <{}>", topics, clientID);
 
         ClientSession clientSession = sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientSession);
@@ -356,17 +338,6 @@ public class ProtocolHandler {
 
         LOG.info("replying with UnsubAck to MSG ID {}", messageID);
         channel.writeAndFlush(ackMessage);
-    }
-
-    private void activeTheSession(ClientSession clientSession) {
-        if (clientSession == null) {
-            LOG.warn("no session specified!");
-            return;
-        }
-        String clientId = clientSession.getClientId();
-        if (mqttClients.containsKey(clientId)) {
-            clientSession.setActive(true);
-        }
     }
 
     private void verifyToActivate(ClientSession targetSession) {
@@ -415,7 +386,7 @@ public class ProtocolHandler {
         //check if the topic can be wrote
         String username = Utils.userName(channel);
         if (!authorizator.canWrite(topic, username, clientId)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
+            LOG.info("topic {} doesn't have write credentials", topic);
             return;
         }
         final QosType qos = message.getQos();
@@ -457,11 +428,14 @@ public class ProtocolHandler {
         interceptor.notifyTopicPublished(message, clientId, username);
     }
 
-    private void route2Subscribers(Message toStoreMsg) {
-        final String topic = toStoreMsg.getTopic();
-        final QosType publishingQos = toStoreMsg.getQos();
-        final ByteBuffer origMessage = toStoreMsg.getMessage();
-        LOG.debug("route2Subscribers republishing to existing subscribers that matches the topic {}", topic);
+    /**
+     * Flood the subscribers with the message to notify. packetId is optional and should only used for QoS 1 and 2
+     */
+    private void route2Subscribers(Message pubMsg) {
+        final String topic = pubMsg.getTopic();
+        final QosType publishingQos = pubMsg.getQos();
+        final ByteBuffer origMessage = pubMsg.getMessage();
+        LOG.info("route2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isTraceEnabled()) {
             LOG.trace("content <{}>", Utils.payload2Str(origMessage));
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
@@ -477,7 +451,7 @@ public class ProtocolHandler {
             ClientSession targetSession = sessionsStore.sessionForClient(sub.getClientId());
             verifyToActivate(targetSession);
 
-            LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
+            LOG.info("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                 sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
             ByteBuffer message = origMessage.duplicate();
             if (qos == QosType.MOST_ONE && targetSession.isActive() && mqttClients.containsKey(targetSession.clientId)) {
@@ -485,12 +459,12 @@ public class ProtocolHandler {
                 directSend(targetSession, topic, qos, message, false, null);
             } else {
                 Message storedMessage = new Message();
-                storedMessage.setMsgId(toStoreMsg.getMsgId());
-                storedMessage.setPacketId(toStoreMsg.getPacketId());
-                storedMessage.setPayload(toStoreMsg.getPayload());
-                storedMessage.setQos(toStoreMsg.getQos());
-                storedMessage.setRetained(toStoreMsg.isRetained());
-                storedMessage.setTopic(toStoreMsg.getTopic());
+                storedMessage.setMsgId(pubMsg.getMsgId());
+                storedMessage.setPacketId(pubMsg.getPacketId());
+                storedMessage.setPayload(pubMsg.getPayload());
+                storedMessage.setQos(pubMsg.getQos());
+                storedMessage.setRetained(pubMsg.isRetained());
+                storedMessage.setTopic(pubMsg.getTopic());
 
                 storedMessage.setClientId(sub.getClientId());
 
@@ -499,12 +473,12 @@ public class ProtocolHandler {
                 //if the target subscription is not clean session and is not connected => store it
                 if (!targetSession.isCleanSession() && !targetSession.isActive()) {
                     //store the message in targetSession queue to deliver
-                    targetSession.enqueueToDeliver(toStoreMsg.getMsgId());
+                    targetSession.enqueueToDeliver(pubMsg.getMsgId());
                 } else {
                     //publish
                     if (targetSession.isActive() && mqttClients.containsKey(targetSession.clientId)) {
                         int packetId = targetSession.nextPacketId();
-                        targetSession.inFlightAckWaiting(toStoreMsg.getMsgId(), packetId);
+                        targetSession.inFlightAckWaiting(pubMsg.getMsgId(), packetId);
                         directSend(targetSession, topic, qos, message, false, packetId);
                     }
                 }
@@ -531,7 +505,7 @@ public class ProtocolHandler {
         int packetId = message.getPacketId();
         targetSession.pubrelWaiting(packetId);
         //once received a PUBREC reply with a PUBREL(packetId)
-        LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientId {} ad packetId {}", clientID, packetId);
+        LOG.info("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientId {} ad packetId {}", clientID, packetId);
         PubRelPacket pubRelMessage = new PubRelPacket();
         pubRelMessage.setPacketId(packetId);
 
@@ -553,7 +527,7 @@ public class ProtocolHandler {
     }
 
     private void publishStoredMessagesInSession(final Subscription newSubscription, String username) {
-        LOG.debug("Publish persisted packets in session {}", newSubscription);
+        LOG.info("Publish persisted packets in session {}", newSubscription);
 
         //scans retained packets to be published to the new subscription
         //TODO this is ugly, it does a linear scan on potential big dataset
@@ -564,7 +538,7 @@ public class ProtocolHandler {
             }
         });
 
-        LOG.debug("Found {} packets to republish", messages.size());
+        LOG.info("Found {} packets to republish", messages.size());
         ClientSession targetSession = sessionsStore.sessionForClient(newSubscription.getClientId());
         verifyToActivate(targetSession);
         for (Message storedMsg : messages) {
@@ -585,7 +559,7 @@ public class ProtocolHandler {
     protected void directSend(ClientSession clientsession, String topic, QosType qos,
                               ByteBuffer message, boolean retained, Integer packetId) {
         String clientId = clientsession.clientId;
-        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} packetId {}",
+        LOG.info("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} packetId {}",
             clientId, topic, qos, retained, packetId);
         PublishPacket pubPacket = new PublishPacket();
         pubPacket.setRetainFlag(retained);
@@ -595,7 +569,7 @@ public class ProtocolHandler {
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", Utils.payload2Str(message));
+            LOG.info("content <{}>", Utils.payload2Str(message));
         }
         //set the PacketIdentifier only for QoS > 0
         if (pubPacket.getQos() != QosType.MOST_ONE) {
@@ -644,7 +618,7 @@ public class ProtocolHandler {
             if (mqttClients == null) {
                 throw new RuntimeException("Internal bad error, found clientIds to null while it should be initialized, somewhere it's overwritten!!");
             }
-            LOG.debug("clientIds are {}", mqttClients);
+            LOG.info("clientIds are {}", mqttClients);
             if (mqttClients.get(clientId) == null) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, mqttClients));
             }
@@ -652,6 +626,42 @@ public class ProtocolHandler {
         } catch (Throwable t) {
             LOG.error(null, t);
         }
+    }
+
+    public void processConnectionLost(String clientId, boolean sessionStolen, Channel channel) {
+        MqttSession mqttSession = new MqttSession(clientId, channel, true);
+        mqttClients.remove(clientId, mqttSession);
+        //If already removed a disconnect message was already processed for this clientId
+        if (sessionStolen) {
+            //de-activate the subscriptions for this ClientID
+            ClientSession clientSession = sessionsStore.sessionForClient(clientId);
+            if (clientSession.isCleanSession())
+                clientSession.deactivate();
+            LOG.info("Lost connection with client <{}>", clientId);
+        }
+        //publish the Will message (if any) for the clientId
+        if (!sessionStolen && willStore.containsKey(clientId)) {
+            WillMessage will = willStore.get(clientId);
+            forwardPublishWill(will, clientId);
+            willStore.remove(clientId);
+        }
+    }
+
+    /**
+     * Specialized version to publish will testament message.
+     */
+    private void forwardPublishWill(WillMessage will, String clientId) {
+        //it has just to publish the message downstream to the subscribers
+        //NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
+        Integer packetId = null;
+        if (will.getQosType() != QosType.MOST_ONE) {
+            packetId = sessionsStore.nextPacketId(clientId);
+        }
+
+        Message tobeStored = asStoredMessage(will);
+        tobeStored.setClientId(clientId);
+        tobeStored.setPacketId(packetId);
+        route2Subscribers(tobeStored);
     }
 
     public void notifyChannelWritable(Channel channel) {
@@ -680,7 +690,7 @@ public class ProtocolHandler {
     public void processPublishComplete(Channel channel, PubCompPacket message) {
         String clientId = Utils.clientId(channel);
         int packetId = message.getPacketId();
-        LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientId {} ad packetId {}", clientId, packetId);
+        LOG.info("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientId {} ad packetId {}", clientId, packetId);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = sessionsStore.sessionForClient(clientId);
         verifyToActivate(targetSession);
@@ -691,5 +701,39 @@ public class ProtocolHandler {
         String username = Utils.userName(channel);
         String topic = inflightMsg.getTopic();
         interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
+    }
+
+    public void processPublishRelease(Channel channel, PubRelPacket packet) {
+        String clientId = Utils.clientId(channel);
+        int packetId = packet.getPacketId();
+        LOG.info("PUB --PUBREL--> SRV processPubRel invoked for clientId {} ad packetId {}", clientId, packetId);
+        ClientSession targetSession = sessionsStore.sessionForClient(clientId);
+        verifyToActivate(targetSession);
+        Message message = targetSession.cacheExactlyMessage(packetId);
+
+        if (message != null) {
+            route2Subscribers(message);
+
+            if (message.isRetained()) {
+                final String topic = message.getTopic();
+                if (!message.getMessage().hasRemaining()) {
+                    messageStore.cleanRetained(topic);
+                } else {
+                    messageStore.storeRetained(topic, message);
+                }
+            }
+
+            targetSession.removeCacheExactlyMessage(message);
+        }
+
+        sendPubComp(clientId, packetId);
+    }
+
+    private void sendPubComp(String clientId, int packetId) {
+        LOG.info("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientId {} ad packetId {}", clientId, packetId);
+        PubCompPacket pubCompMessage = new PubCompPacket();
+        pubCompMessage.setPacketId(packetId);
+
+        mqttClients.get(clientId).getChannel().writeAndFlush(pubCompMessage);
     }
 }

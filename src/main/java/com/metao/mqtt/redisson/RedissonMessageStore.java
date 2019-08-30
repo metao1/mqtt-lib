@@ -43,7 +43,7 @@ public class RedissonMessageStore implements MessagesStore {
 
     @Override
     public Collection<Message> searchMatching(MatchingCondition condition) {
-        LOG.debug("searchMatching scanning all retained packets, presents are {}", retainedStore.size());
+        LOG.info("searchMatching scanning all retained packets, presents are {}", retainedStore.size());
 
         List<Message> results = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class RedissonMessageStore implements MessagesStore {
 
     @Override
     public void storePublishForFuture(Message evt) {
-        LOG.debug("storePublishForFuture store evt {}", evt);
+        LOG.info("storePublishForFuture store evt {}", evt);
         if (evt.getClientId() == null) {
             LOG.error("persisting a message without a clientId, bad programming error msg: {}", evt);
             throw new IllegalArgumentException("\"persisting a message without a clientId, bad programming error");
@@ -83,7 +83,7 @@ public class RedissonMessageStore implements MessagesStore {
 
     @Override
     public void cacheForExactly(Message evt) {
-        LOG.debug("cacheForExactly store evt {}", evt);
+        LOG.info("cacheForExactly store evt {}", evt);
         if (evt.getClientId() == null) {
             LOG.error("persisting a message without a clientId, bad programming error msg: {}", evt);
             throw new IllegalArgumentException("\"persisting a message without a clientId, bad programming error");

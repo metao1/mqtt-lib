@@ -1,3 +1,4 @@
+
 package com.metao.mqtt.coders.decoders;
 
 import com.metao.mqtt.models.PingResponsePacket;
@@ -6,10 +7,14 @@ import io.netty.util.AttributeMap;
 
 import java.util.List;
 
-public class PingRespDecoder extends Decoder {
+/**
+ * @author Mehrdad
+ */
+class PingRespDecoder extends Decoder {
 
     @Override
-    protected void decode(AttributeMap map, ByteBuf in, List<Object> out) {
+    protected void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
+        //Common decoding part
         in.resetReaderIndex();
         PingResponsePacket message = new PingResponsePacket();
         if (!decodeCommonHeader(message, 0x00, in)) {
