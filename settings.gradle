@@ -3,4 +3,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'carsync-lib-mqtt'
+rootProject.name = 'mqtt-library
