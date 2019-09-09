@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,7 +49,7 @@ public class MqttConnectTest extends MqttSetupTest {
 	protected static class MqttHandlerTest implements MqttHandler {
 
 		@Override
-		public void onMessage(String topic, ByteBuf payload) {
+		public void onMessage(String topic, ByteBuf payload) throws UnsupportedEncodingException {
 			log.info("new message : topic <{}> & payload <{}> ", topic, Utils.decodeByteBuffToString(payload));
 		}
 	}

@@ -23,6 +23,8 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Promise;
 
+import java.io.UnsupportedEncodingException;
+
 final class MqttChannelHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     private final MqttClientImpl client;
@@ -99,7 +101,7 @@ final class MqttChannelHandler extends SimpleChannelInboundHandler<MqttMessage> 
         super.channelInactive(ctx);
     }
 
-    private void invokeHandlersForIncomingPublish(MqttPublishMessage message) {
+    private void invokeHandlersForIncomingPublish(MqttPublishMessage message) throws UnsupportedEncodingException {
         boolean handlerInvoked = false;
         for (MqttSubscription subscription : ImmutableSet.copyOf(this.client.getSubscriptions().values())) {
             if (subscription.matches(message.variableHeader().topicName())) {
@@ -178,7 +180,7 @@ final class MqttChannelHandler extends SimpleChannelInboundHandler<MqttMessage> 
         }
     }
 
-    private void handlePublish(Channel channel, MqttPublishMessage message) {
+    private void handlePublish(Channel channel, MqttPublishMessage message) throws UnsupportedEncodingException {
         switch (message.fixedHeader().qosLevel()) {
             case AT_MOST_ONCE:
                 invokeHandlersForIncomingPublish(message);
@@ -247,7 +249,7 @@ final class MqttChannelHandler extends SimpleChannelInboundHandler<MqttMessage> 
         pendingPublish.startPubrelRetransmissionTimer(this.client.getEventLoop().next(), this.client::sendAndFlushPacket);
     }
 
-    private void handlePubrel(Channel channel, MqttMessage message) {
+    private void handlePubrel(Channel channel, MqttMessage message) throws UnsupportedEncodingException {
         if (this.client.getQos2PendingIncomingPublishes().containsKey(((MqttMessageIdVariableHeader) message.variableHeader()).messageId())) {
             MqttIncomingQos2Publish incomingQos2Publish = this.client.getQos2PendingIncomingPublishes().get(((MqttMessageIdVariableHeader) message.variableHeader()).messageId());
             this.invokeHandlersForIncomingPublish(incomingQos2Publish.getIncomingPublish());
