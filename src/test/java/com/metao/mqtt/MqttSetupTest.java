@@ -22,7 +22,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
  * @author Mehrdad A.Karami at 2/28/19
  **/
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
 @PropertySource("classpath:application-test.properties")
 public class MqttSetupTest {
@@ -42,7 +42,7 @@ public class MqttSetupTest {
 
 	@Test
 	public void mqttServerInitializationTest() {
-		assertThat(tcpServerAcceptorHandler.getServerMap().size()).isGreaterThan(1);
+		assertThat(tcpServerAcceptorHandler.getServerMap().size()).isEqualTo(1);
 	}
 
 	@Test

@@ -28,6 +28,7 @@ public class TCPServerAcceptorHandler {
     MqttProperties mqttProperties;
 
     private MqttFactoryBuilder.GeneralServer mqttTcpServer;
+    private boolean connected;
 
     /**
      * Initialize the MQTT Server for the mqtt microservice
@@ -44,6 +45,7 @@ public class TCPServerAcceptorHandler {
     @PreDestroy
     public void destroy() {
         mqttTcpServer.handleClosePipeLine(tcpGroup, workerGroup);
+        connected = false;
     }
 
     private void initializeTcpHandler(EventLoopGroup tcpGroup, EventLoopGroup workerGroup) throws InterruptedException {
@@ -53,9 +55,14 @@ public class TCPServerAcceptorHandler {
         //todo add ssl tcp connection here
         mqttTcpServer.build(tcpHandler);
         serverMap.put(Utils.generateUniqueId(), mqttTcpServer);
+        connected = true;
     }
 
     public Map<String, MqttFactoryBuilder.GeneralServer> getServerMap() {
         return serverMap;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }

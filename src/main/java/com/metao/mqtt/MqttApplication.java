@@ -30,7 +30,7 @@ public class MqttApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        /*Product product = new Product();
+       /* Product product = new Product();
         product.setId(UUID.randomUUID().toString());
         product.setPassword("25de6fd7a33ced95274445c00055d770857eaca128be7b7c30d7ce7cde433367c37b9a465536299d");
         product.setUsername("mehrdad");
