@@ -18,6 +18,8 @@
 *.ipr
 /out/
 
+docker/*
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
