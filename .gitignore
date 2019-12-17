@@ -18,7 +18,7 @@
 *.ipr
 /out/
 
-docker/*
+docker/data
 
 ### NetBeans ###
 /nbproject/private/
