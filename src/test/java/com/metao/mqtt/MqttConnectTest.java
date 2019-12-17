@@ -1,9 +1,8 @@
 package com.metao.mqtt;
 
-import com.metao.mqtt.pack.MqttHandler;
 import com.metao.mqtt.pack.MqttClientImpl;
 import com.metao.mqtt.pack.MqttConnectResult;
-import com.metao.mqtt.server.TCPServerAcceptorHandler;
+import com.metao.mqtt.pack.MqttHandler;
 import com.metao.mqtt.utils.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,7 +23,6 @@ import java.util.concurrent.TimeoutException;
 
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 /**
  * @author Mehrdad A.Karami at 3/8/19
@@ -73,16 +70,16 @@ public class MqttConnectTest extends MqttSetupTest {
 		assertThat(localhost.get(timeout, TimeUnit.MILLISECONDS).isSuccess()).isTrue();
 	}
 
-	@Test
-	public void reconnectToTheMqttServerTest() throws InterruptedException, ExecutionException, TimeoutException {
-		Future<MqttConnectResult> localhost = mqttClient.connect(mqttHost, mqttPort);
-		assertThat(localhost).isNotNull();
-		Channel channel = localhost.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel();
-		assertThat(channel).isNotNull();
-		Future<MqttConnectResult> reconnect = mqttClient.reconnect();
-		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS)).isNotNull();
-		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isNotNull();
-		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel()).isNotNull();
-		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isEqualTo(CONNECTION_ACCEPTED);
-	}
+//	@Test
+//	public void reconnectToTheMqttServerTest() throws InterruptedException, ExecutionException, TimeoutException {
+//		Future<MqttConnectResult> localhost = mqttClient.connect(mqttHost, mqttPort);
+//		assertThat(localhost).isNotNull();
+//		Channel channel = localhost.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel();
+//		assertThat(channel).isNotNull();
+//		Future<MqttConnectResult> reconnect = mqttClient.reconnect();
+//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS)).isNotNull();
+//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isNotNull();
+//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel()).isNotNull();
+//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isEqualTo(CONNECTION_ACCEPTED);
+//	}
 }
