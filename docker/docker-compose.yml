@@ -25,19 +25,3 @@ services:
       - ./data/db:/data/db
     ports:
       - 27017:27017
-
-  mqtt:
-    image: metao/mqtt:latest
-    container_name: "mqtt"
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/mqtt
-      - MQTT_REDIS_HOST=redis
-      - MQTT_REDIS_PORT=6379
-      - MQTT_REDIS_DATABASE=redis
-    networks:
-      - metao-net
-    ports:
-      - 1883:1883
-    depends_on:
-      - mongodb
-      - redis
