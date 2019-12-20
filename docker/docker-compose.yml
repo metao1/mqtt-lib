@@ -1,11 +1,13 @@
-version: "3"
+version: "3.7"
 
 networks:
   metao-net:
-    driver: bridge
+    name: metao-net
+
 services:
 
   redis:
+    container_name: redis
     image: "redis:alpine"
     hostname: redis
     networks:
@@ -15,7 +17,8 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: "mongodb"
+    container_name: springboot-mongo
+    restart: always
     networks:
       - metao-net
     environment:
@@ -25,3 +28,21 @@ services:
       - ./data/db:/data/db
     ports:
       - 27017:27017
+
+  mqtt:
+    build: .
+    restart: always
+    image: mqtt:latest
+    networks:
+      - metao-net
+    container_name: "mqtt"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo:27017/mqtt
+      - MQTT_REDIS_HOST=redis
+      - MQTT_REDIS_PORT=6379
+      - MQTT_REDIS_DATABASE=redis
+    ports:
+      - 1883:1883
+    depends_on:
+      - mongodb
+      - redis
