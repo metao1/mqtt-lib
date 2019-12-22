@@ -1,0 +1,4 @@
+SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
+MQTT_REDIS_HOST=localhost
+MQTT_REDIS_PORT=6379
+MQTT_REDIS_DATABASE=redis

@@ -22,7 +22,8 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     compile group: 'org.springframework', name: 'spring-web', version: '5.1.5.RELEASE'
-    
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
     compile "io.netty:netty-transport:$netty_version"
     compile "io.netty:netty-common:$netty_version"
     compile "io.netty:netty-buffer:$netty_version"
