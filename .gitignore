@@ -26,3 +26,4 @@ docker/data
 /dist/
 /nbdist/
 /.nb-gradle/
+data
