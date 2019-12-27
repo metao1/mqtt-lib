@@ -19,6 +19,10 @@ public class MqttProperties {
 
     private Integer workCount = 0;
 
+    private boolean passwordEnabled;
+
+    private String url;
+
     private String host;
 
     private Integer port;
@@ -38,6 +42,10 @@ public class MqttProperties {
     private Boolean wsEnable = false;
 
     private Boolean wssEnable = false;
+
+    private String username;
+
+    private String password;
 
     public Boolean getAllowAnonymous() {
         return allowAnonymous;
@@ -157,5 +165,37 @@ public class MqttProperties {
 
     public void setConnectTimeout(Integer connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPasswordEnabled(boolean passwordEnabled) {
+        this.passwordEnabled = passwordEnabled;
+    }
+
+    public boolean isPasswordEnabled(){
+        return passwordEnabled;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

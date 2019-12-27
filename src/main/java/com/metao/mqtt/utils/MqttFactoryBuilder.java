@@ -25,8 +25,8 @@ import java.lang.reflect.MalformedParametersException;
 public class MqttFactoryBuilder {
     private static Logger log = LoggerFactory.getILoggerFactory().getLogger(MqttFactoryBuilder.class.getName());
 
-    public GeneralServer tcpConnection(EventLoopGroup tcpGroup, EventLoopGroup workerGroup, String mqttHost,
-                                       int mqttPort) {
+    public static GeneralServer makeTcpConnection(EventLoopGroup tcpGroup, EventLoopGroup workerGroup, String mqttHost,
+                                                  int mqttPort) {
         if (!Utils.isValid(mqttHost) || mqttPort <= 0) {
             throw new MalformedParametersException("The mqtt host or port not set, check your application.properties");
         }

@@ -1,85 +1,71 @@
 package com.metao.mqtt;
 
-import com.metao.mqtt.pack.MqttClientImpl;
-import com.metao.mqtt.pack.MqttConnectResult;
-import com.metao.mqtt.pack.MqttHandler;
-import com.metao.mqtt.utils.Utils;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.util.concurrent.Future;
-import org.junit.Before;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.UnsupportedEncodingException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Mehrdad A.Karami at 3/8/19
  **/
 
 @RunWith(SpringRunner.class)
+@PropertySource("classpath:application-test.properties")
 @SpringBootTest
-public class MqttConnectTest extends MqttSetupTest {
+public class MqttConnectTest{
 
-	protected static Logger log = LoggerFactory.getLogger(MqttConnectTest.class);
+    protected static Logger log = LoggerFactory.getLogger(MqttConnectTest.class);
 
-	@Value("${mqtt.host}")
-	public String mqttHost;
+    @Value("${mqtt.url}")
+    public String mqttUrl;
 
-	@Value("${mqtt.port}")
-	public Integer mqttPort;
+    @Value("${mqtt.port}")
+    public Integer mqttPort;
 
-	protected MqttClientImpl mqttClient;
+    @Value("${mqtt.username}")
+    public String mqttUsername;
 
-	//Timeout for the Future object until it get completed
-	protected final long timeout = 5000;
-	protected MqttHandlerTest mqttHandlerTest;
+	@Value("${mqtt.password}")
+	public String mqttPassword;
 
-	protected static class MqttHandlerTest implements MqttHandler {
+    //Timeout for the Future object until it get completed
+    protected final long timeout = 5000;
 
-		@Override
-		public void onMessage(String topic, ByteBuf payload) throws UnsupportedEncodingException {
-			log.info("new message : topic <{}> & payload <{}> ", topic, Utils.decodeByteBuffToString(payload));
-		}
-	}
+    @Test
+    public void connectToMqttServerAndSendMessageTest() throws MqttException {
+        String topic = "MQTT Examples";
+        String content = "Message from MqttPublishSample";
+        int qos = 2;
+        String broker = mqttUrl;
+        String clientId = "mqttClient";
+        MemoryPersistence persistence = new MemoryPersistence();
+        MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
+        MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setCleanSession(true);
+        connOpts.setUserName(mqttUsername);
+        connOpts.setPassword(mqttPassword.toCharArray());
+        System.out.println("Connecting to broker: " + broker);
+        sampleClient.connect(connOpts);
+		assertTrue(sampleClient.isConnected());
+        System.out.println("Connected");
+        System.out.println("Publishing message: " + content);
+        MqttMessage message = new MqttMessage(content.getBytes());
+        message.setQos(qos);
+        sampleClient.publish(topic, message);
+        System.out.println("Message published");
+        sampleClient.disconnect();
+        System.out.println("Disconnect");
+    }
 
-	@Before
-	public void setup() {
-		mqttHandlerTest = new MqttHandlerTest();
-		mqttClient = new MqttClientImpl(mqttHandlerTest);
-        assertThat(tcpServerAcceptorHandler.isConnected()).isTrue();
-	}
-
-	@Test
-	public void connectToMqttServerTest() throws InterruptedException, ExecutionException, TimeoutException {
-		Future<MqttConnectResult> localhost = mqttClient.connect(mqttHost, mqttPort);
-		assertThat(localhost).isNotNull();
-		assertThat(localhost.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isNotNull();
-		assertThat(localhost.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isEqualTo(CONNECTION_ACCEPTED);
-		assertThat(localhost.get(timeout, TimeUnit.MILLISECONDS).isSuccess()).isTrue();
-	}
-
-//	@Test
-//	public void reconnectToTheMqttServerTest() throws InterruptedException, ExecutionException, TimeoutException {
-//		Future<MqttConnectResult> localhost = mqttClient.connect(mqttHost, mqttPort);
-//		assertThat(localhost).isNotNull();
-//		Channel channel = localhost.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel();
-//		assertThat(channel).isNotNull();
-//		Future<MqttConnectResult> reconnect = mqttClient.reconnect();
-//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS)).isNotNull();
-//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isNotNull();
-//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getCloseFuture().channel()).isNotNull();
-//		assertThat(reconnect.get(timeout, TimeUnit.MILLISECONDS).getReturnCode()).isEqualTo(CONNECTION_ACCEPTED);
-//	}
 }

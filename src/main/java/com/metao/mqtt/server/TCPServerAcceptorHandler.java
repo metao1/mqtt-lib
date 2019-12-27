@@ -48,10 +48,9 @@ public class TCPServerAcceptorHandler {
         connected = false;
     }
 
-    private void initializeTcpHandler(EventLoopGroup tcpGroup, EventLoopGroup workerGroup) throws InterruptedException {
-        mqttTcpServer = new MqttFactoryBuilder()
-            .tcpConnection(tcpGroup, workerGroup, mqttProperties.getHost(),
-                mqttProperties.getPort());
+    private void initializeTcpHandler(EventLoopGroup tcpGroup, EventLoopGroup workerGroup) {
+        mqttTcpServer = MqttFactoryBuilder
+                .makeTcpConnection(tcpGroup, workerGroup, mqttProperties.getHost(), mqttProperties.getPort());
         //todo add ssl tcp connection here
         mqttTcpServer.build(tcpHandler);
         serverMap.put(Utils.generateUniqueId(), mqttTcpServer);
