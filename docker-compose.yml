@@ -2,36 +2,36 @@ version: '3.4'
 
 services:
 
-#  redis:
-#    container_name: redis
-#    image: "redis:alpine"
-#    hostname: redis
-#    ports:
-#      - 6379:6379
-#
-#  mongodb:
-#    image: mongo:latest
-#    container_name: springboot-mongo
-#    restart: always
-#    environment:
-#      - MONGO_DATA_DIR=/data/db
-#      - MONGO_LOG_DIR=/dev/null
-#    volumes:
-#      - ./data/db:/data/db
-#    ports:
-#      - 27017:27017
-#
-  mqtt:
-    build: .
-    restart: always
-    image: mqtt:latest
-    container_name: "mqtt"
-    expose:
-      - "1883"
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
-      - MQTT_REDIS_HOST=redis
-      - MQTT_REDIS_PORT=6379
-      - MQTT_REDIS_DATABASE=redis
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+    hostname: redis
     ports:
-      - "1883:1883"
+      - 6379:6379
+
+  mongodb:
+    image: mongo:latest
+    container_name: springboot-mongo
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - 27017:27017
+
+#  mqtt:
+#    build: .
+#    restart: always
+#    image: mqtt:latest
+#    container_name: "mqtt"
+#    expose:
+#      - "1883"
+#    environment:
+#      - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
+#      - MQTT_REDIS_HOST=redis
+#      - MQTT_REDIS_PORT=6379
+#      - MQTT_REDIS_DATABASE=redis
+#    ports:
+#      - "1883:1883"
