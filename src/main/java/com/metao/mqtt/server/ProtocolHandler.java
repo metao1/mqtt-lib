@@ -117,17 +117,17 @@ public class ProtocolHandler {
             return;
         }
 
-        //if an old client with the same ID already exists close its session.
-        if (mqttClients.containsKey(packet.getClientId())) {
-            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", packet.getClientId());
-            //clean the subscriptions if the old used a cleanSession = true
-            Channel oldChannel = mqttClients.get(packet.getClientId()).getChannel();
-            ClientSession oldClientSession = sessionsStore.sessionForClient(packet.getClientId());
-            oldClientSession.disconnect();
-            Utils.sessionStolen(oldChannel, true);
-            oldChannel.close();
-            LOG.info("Existing connection with same client ID <{}>, forced to close", packet.getClientId());
-        }
+//        //if an old client with the same ID already exists close its session.
+//        if (mqttClients.containsKey(packet.getClientId())) {
+//            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", packet.getClientId());
+//            //clean the subscriptions if the old used a cleanSession = true
+//            Channel oldChannel = mqttClients.get(packet.getClientId()).getChannel();
+//            ClientSession oldClientSession = sessionsStore.sessionForClient(packet.getClientId());
+//            oldClientSession.disconnect();
+//            Utils.sessionStolen(oldChannel, true);
+//            oldChannel.close();
+//            LOG.info("Existing connection with same client ID <{}>, forced to close", packet.getClientId());
+//        }
 
         MqttSession connDescr = new MqttSession(packet.getClientId(), channel, packet.isCleanSession());
         mqttClients.put(packet.getClientId(), connDescr);
