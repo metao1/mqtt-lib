@@ -33,7 +33,7 @@ public class TCPServerAcceptorHandler {
     /**
      * Initialize the MQTT Server for the mqtt microservice
      *
-     * @throws InterruptedException
+     * @throws InterruptedException w
      */
     @Autowired
     public void initialize() throws InterruptedException {

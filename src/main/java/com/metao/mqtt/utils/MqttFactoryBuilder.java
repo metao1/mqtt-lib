@@ -9,13 +9,15 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.lang.reflect.MalformedParametersException;
 
 /**
@@ -140,12 +142,15 @@ public class MqttFactoryBuilder {
         @Override
         protected void setPipeLine(ChannelPipeline pipeline) {
             pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, 10))
-                .addAfter("idleStateHandler", "idleEventHandler", idleTimeoutHandler)
-                //.addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector))
-                .addLast("decoder", new MQTTDecoder())
-                .addLast("encoder", new MQTTEncoder())
-                //.addLast("metrics", new MessageMetricsHandler(metricsCollector))
-                .addLast("handler", handlerAdapter);
+                    .addAfter("idleStateHandler", "idleEventHandler", idleTimeoutHandler)
+                    .addLast("decoder", new MQTTDecoder())
+                    .addLast("encoder", new MQTTEncoder())
+                    .addLast("metrics", new MessageMetricsHandler(metricsCollector))
+                    .addLast("httpEncoder", new HttpResponseEncoder())
+                    .addLast("httpDecoder", new HttpRequestDecoder())
+                    .addLast("aggregator", new HttpObjectAggregator(65536))
+                    .addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector))
+                    .addLast("handler", handlerAdapter);
         }
     }
 

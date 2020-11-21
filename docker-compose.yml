@@ -1,4 +1,4 @@
-version: '3.4'
+version: '2.1'
 
 services:
 
@@ -6,6 +6,7 @@ services:
     container_name: redis
     image: "redis:alpine"
     hostname: redis
+    networks: [ backing-services ]
     ports:
       - 6379:6379
 
@@ -13,6 +14,7 @@ services:
     image: mongo:latest
     container_name: springboot-mongo
     restart: always
+    networks: [ backing-services ]
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
@@ -21,17 +23,30 @@ services:
     ports:
       - 27017:27017
 
-#  mqtt:
-#    build: .
-#    restart: always
-#    image: mqtt:latest
-#    container_name: "mqtt"
-#    expose:
-#      - "1883"
-#    environment:
-#      - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
-#      - MQTT_REDIS_HOST=redis
-#      - MQTT_REDIS_PORT=6379
-#      - MQTT_REDIS_DATABASE=redis
-#    ports:
-#      - "1883:1883"
+  mqtt:
+    build: .
+    restart: always
+    image: mqtt:latest
+    privileged: true
+    container_name: "mqtt"
+    expose:
+      - 1883
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
+      - MQTT_HOST=0.0.0.0 #very important for container to bound to all internal network interfaces
+      - MQTT_PORT=1883
+      - MQTT_REDIS_HOST=redis
+      - MQTT_REDIS_PORT=6379
+      - MQTT_USERNAME=mehrdad
+      - MQTT_PASSWORD=mehrdad
+      - MQTT_REDIS_DATABASE=redis
+    ports: [ "1883:1883", "8080:8080" ]
+    networks: [ backing-services ]
+
+
+networks:
+  backing-services:
+    driver: bridge

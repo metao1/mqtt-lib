@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo $@
 #===========================================================================================
 # Java Environment Setting
 #===========================================================================================
@@ -36,4 +37,7 @@ JAVA_OPT="${JAVA_OPT} -Dcom.sun.management.jmxremote.port=1099"
 JAVA_OPT="${JAVA_OPT} ${JAVA_OPT_EXT}"
 JAVA_OPT="${JAVA_OPT} -cp ${CLASSPATH}"
 
-$JAVA ${JAVA_OPT} -jar $@
+
+java \
+        ${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom \
+        -jar $@

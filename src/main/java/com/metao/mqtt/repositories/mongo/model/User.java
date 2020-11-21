@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author Mehrdad A.Karami at 3/5/19
  */
-public class Product {
+public class User {
 
     @Id
     private String id;
