@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3.4'
 
 services:
 
@@ -6,7 +6,6 @@ services:
     container_name: redis
     image: "redis:alpine"
     hostname: redis
-    networks: [ backing-services ]
     ports:
       - 6379:6379
 
@@ -14,7 +13,6 @@ services:
     image: mongo:latest
     container_name: springboot-mongo
     restart: always
-    networks: [ backing-services ]
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
@@ -43,10 +41,5 @@ services:
       - MQTT_USERNAME=mehrdad
       - MQTT_PASSWORD=mehrdad
       - MQTT_REDIS_DATABASE=redis
-    ports: [ "1883:1883", "8080:8080" ]
-    networks: [ backing-services ]
-
-
-networks:
-  backing-services:
-    driver: bridge
+    ports:
+      - 1883:1883

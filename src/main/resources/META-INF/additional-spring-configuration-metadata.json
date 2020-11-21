@@ -4,5 +4,10 @@
       "name": "mqtt.redis.port",
       "type": "java.lang.String",
       "description": "Description for mqtt.redis.port."
-  }
-] }
+    },
+    {
+      "name": "mqtt.password",
+      "type": "java.lang.String",
+      "description": "Description for mqtt.password."
+    }
+  ] }
