@@ -1,0 +1,22 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mqtt
+
+server:
+  port: 8080
+# MQTT Properties
+
+mqtt:
+  url: tcp://localhost:1883
+  username: mehrdad
+  password: mehrdad
+  host: localhost
+  port: 1883
+  redis:
+    host: localhost
+    port: 6379
+    database: redis
+#MQTT Redis Properties
+
+

@@ -30,7 +30,7 @@ public class MqttFactoryBuilder {
     public static GeneralServer makeTcpConnection(EventLoopGroup tcpGroup, EventLoopGroup workerGroup, String mqttHost,
                                                   int mqttPort) {
         if (!Utils.isValid(mqttHost) || mqttPort <= 0) {
-            throw new MalformedParametersException("The mqtt host or port not set, check your application.properties");
+            throw new MalformedParametersException("The mqtt host or port not set, check your application.yml");
         }
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(tcpGroup, workerGroup).channel(NioServerSocketChannel.class);
@@ -80,7 +80,7 @@ public class MqttFactoryBuilder {
         public void build(final ChannelInboundHandlerAdapter handlerAdapter) {
             try {
                 this.handlerAdapter = handlerAdapter;
-                ChannelFuture channelFuture = this.bootstrap.bind(host, port);
+                ChannelFuture channelFuture = this.bootstrap.bind(port);
                 channelFuture.sync();
                 log.info("Server bound host:{}, port: {}", host, port);
                 run = true;

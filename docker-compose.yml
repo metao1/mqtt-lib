@@ -34,7 +34,6 @@ services:
       - mongodb
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://springboot-mongo/mqtt
-      - MQTT_HOST=0.0.0.0 #very important for container to bound to all internal network interfaces
       - MQTT_PORT=1883
       - MQTT_REDIS_HOST=redis
       - MQTT_REDIS_PORT=6379
