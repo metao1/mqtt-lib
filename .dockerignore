@@ -7,3 +7,5 @@ data
 *.gitlab-ci.yml
 *.gitignore
 *.git
+.DS_Store
+.dockeringore
