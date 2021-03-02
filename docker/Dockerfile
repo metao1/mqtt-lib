@@ -1,7 +1,10 @@
 FROM adoptopenjdk:11-jdk-hotspot as builder
 
 LABEL stage=builder
-ADD . /code/
+
+WORKDIR /code
+
+ADD ./ ./
 
 RUN    addgroup mqtt \
     && apt-get update \
@@ -13,17 +16,17 @@ RUN    addgroup mqtt \
     && chown -R mqtt:mqtt /opt/metao \
     && chown -R mqtt:mqtt /code
 
-RUN    cd /code/ \
-    && dos2unix gradlew \
+RUN    dos2unix gradlew \
     && chmod +x gradlew
 
 USER mqtt
 
-RUN cd /code/ \
-    && rm -rf build \
+RUN rm -rf build \
     && sleep 1 \
     && ./gradlew clean build -x test \
     && cp build/libs/*.jar /opt/metao/mqtt.jar
+
+RUN rm -rf *
 
 FROM adoptopenjdk:11-jre-hotspot
 

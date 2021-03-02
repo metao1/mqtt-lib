@@ -1,10 +1,9 @@
-*/build
-*/logs
-*/kubernetes
+build
+logs
+docker
+docker-compose.yml
 *.idea
-*/data
+data
 *.gitlab-ci.yml
 *.gitignore
 *.git
-*Dockerfile
-.

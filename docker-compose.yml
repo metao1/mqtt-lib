@@ -22,7 +22,10 @@ services:
       - 27017:27017
 
   mqtt:
-    build: .
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile
+    
     restart: always
     image: mqtt:latest
     privileged: true
