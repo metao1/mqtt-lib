@@ -1,4 +1,7 @@
 spring:
+  banner:
+    image:
+      location: classpath://
   data:
     mongodb:
       uri: mongodb://localhost:27017/mqtt
