@@ -18,8 +18,8 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">2000</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">20000</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0.1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -214,7 +214,7 @@
         <Summariser guiclass="SummariserGui" testclass="Summariser" testname="Generate Summary Results" enabled="true"/>
         <hashTree/>
         <ConfigTestElement guiclass="SimpleConfigGui" testclass="ConfigTestElement" testname="Simple Config Element" enabled="true">
-          <stringProp name="IP">${__P(HOST,0.0.0.0)}</stringProp>
+          <stringProp name="IP">${__P(HOST,broker.hivemq.com)}</stringProp>
         </ConfigTestElement>
         <hashTree/>
         <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Simple Controller" enabled="true"/>
@@ -224,7 +224,7 @@
           </SampleTimeout>
           <hashTree/>
           <net.xmeter.samplers.ConnectSampler guiclass="net.xmeter.gui.ConnectSamplerUI" testclass="net.xmeter.samplers.ConnectSampler" testname="MQTT Connect" enabled="true">
-            <stringProp name="mqtt.server">127.0.0.1</stringProp>
+            <stringProp name="mqtt.server">broker.hivemq.com</stringProp>
             <stringProp name="mqtt.port">1883</stringProp>
             <stringProp name="mqtt.version">3.1</stringProp>
             <stringProp name="mqtt.conn_timeout">10</stringProp>
@@ -235,7 +235,7 @@
             <stringProp name="mqtt.clientcert_password"></stringProp>
             <stringProp name="mqtt.user_name">mehrdad</stringProp>
             <stringProp name="mqtt.password">mehrdad</stringProp>
-            <stringProp name="mqtt.client_id_prefix">conn_</stringProp>
+            <stringProp name="mqtt.client_id_prefix">broker.hivemq.com</stringProp>
             <boolProp name="mqtt.client_id_suffix">true</boolProp>
             <stringProp name="mqtt.conn_keep_alive">300</stringProp>
             <stringProp name="mqtt.conn_attampt_max">0</stringProp>
@@ -243,7 +243,7 @@
             <stringProp name="mqtt.conn_clean_session">true</stringProp>
           </net.xmeter.samplers.ConnectSampler>
           <hashTree/>
-          <net.xmeter.samplers.PubSampler guiclass="net.xmeter.gui.PubSamplerUI" testclass="net.xmeter.samplers.PubSampler" testname="MQTT Pub Sampler" enabled="true">
+          <net.xmeter.samplers.PubSampler guiclass="net.xmeter.gui.PubSamplerUI" testclass="net.xmeter.samplers.PubSampler" testname="MQTT Pub Sampler" enabled="false">
             <stringProp name="mqtt.topic_name">test_topic</stringProp>
             <stringProp name="mqtt.qos_level">0</stringProp>
             <boolProp name="mqtt.add_timestamp">false</boolProp>
@@ -253,7 +253,7 @@
             <boolProp name="mqtt.retained_message">false</boolProp>
           </net.xmeter.samplers.PubSampler>
           <hashTree/>
-          <net.xmeter.samplers.SubSampler guiclass="net.xmeter.gui.SubSamplerUI" testclass="net.xmeter.samplers.SubSampler" testname="MQTT Sub Sampler" enabled="true">
+          <net.xmeter.samplers.SubSampler guiclass="net.xmeter.gui.SubSamplerUI" testclass="net.xmeter.samplers.SubSampler" testname="MQTT Sub Sampler" enabled="false">
             <stringProp name="mqtt.topic_name">test_topic</stringProp>
             <stringProp name="mqtt.qos_level">0</stringProp>
             <boolProp name="mqtt.add_timestamp">false</boolProp>
